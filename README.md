@@ -15,6 +15,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 1 completed: raw socket networking with HTTPS to fetch HTML.
 - Step 2 completed: separate HTTP headers from the body.
 - Step 3 completed: basic GUI window with a Tkinter canvas.
+- Step 4 completed: basic HTML tag stripping to extract text.
 
 ## Files
 
@@ -22,6 +23,7 @@ This project is a first step toward building a custom web browser using Python a
 - `network.py`: Step 1 networking proof of concept (raw sockets + HTTPS).
 - `html_parser.py`: Step 2 response parsing (headers vs body).
 - `browser.py`: Step 3 GUI window with a drawing canvas.
+- `test_browser.py`: Step 4 quick test to print extracted text.
 - `history.json`: Stored browsing history.
 - `bookmarks.json`: Stored bookmarks.
 
@@ -66,6 +68,18 @@ Example:
 canvas.create_text(100, 50, text="Hello")
 ```
 
+## Step 4 Completed: Remove HTML Tags (Basic Parsing)
+
+HTML contains tags like `<h1>` and `<p>`, but the user should see only the text. This step implements a simple parser that scans the HTML character-by-character, ignores everything inside `<` and `>`, and keeps only the visible text.
+
+How it works:
+
+- When `<` is found, start ignoring characters.
+- When `>` is found, stop ignoring and resume collecting text.
+- Output is plain text that can be drawn to the canvas.
+
+This is a beginner-friendly approach and not enough for complex pages, but it proves the core idea.
+
 ## How It Works (High Level)
 
 1. The app starts a `QMainWindow` and adds a `QTabWidget` as the main area.
@@ -89,6 +103,10 @@ python html_parser.py
 
 ```bash
 python browser.py
+```
+
+```bash
+python test_browser.py
 ```
 
 ## Next Steps (Ideas)
