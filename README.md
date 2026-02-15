@@ -16,6 +16,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 2 completed: separate HTTP headers from the body.
 - Step 3 completed: basic GUI window with a Tkinter canvas.
 - Step 4 completed: basic HTML tag stripping to extract text.
+- Step 5 completed: real HTML parser with DOM tree structure.
 
 ## Files
 
@@ -24,6 +25,7 @@ This project is a first step toward building a custom web browser using Python a
 - `html_parser.py`: Step 2 response parsing (headers vs body).
 - `browser.py`: Step 3 GUI window with a drawing canvas.
 - `test_browser.py`: Step 4 quick test to print extracted text.
+- `dom_parser.py`: Step 5 DOM tree builder (tokenization + tree structure).
 - `history.json`: Stored browsing history.
 - `bookmarks.json`: Stored bookmarks.
 
@@ -80,6 +82,41 @@ How it works:
 
 This is a beginner-friendly approach and not enough for complex pages, but it proves the core idea.
 
+## Step 5 Completed: Build a Real HTML Parser (DOM Tree)
+
+Simple tag stripping loses structure. HTML is a tree, so the browser must build a **DOM (Document Object Model)** to know which elements are nested, which text is bold, and how to apply styles.
+
+Why DOM is needed:
+
+```html
+<p>Hello <b>Samiksha</b></p>
+```
+
+Stripping gives `Hello Samiksha`, but the browser must know "Samiksha" is bold and both are inside a paragraph.
+
+DOM tree looks like:
+
+```
+p
+ ├── text("Hello")
+ └── b
+      └── text("Samiksha")
+```
+
+How DOM is built:
+
+1. **Tokenization**: Split HTML into tokens (opening tags, closing tags, text).
+2. **Tree building**: Use a stack to track open elements and build parent-child relationships.
+
+Example:
+
+- `<p>` → push node to stack
+- `Hello` → add as child of `<p>`
+- `<b>` → push node to stack
+- `Samiksha` → add as child of `<b>`
+- `</b>` → pop node from stack
+- `</p>` → pop node from stack
+
 ## How It Works (High Level)
 
 1. The app starts a `QMainWindow` and adds a `QTabWidget` as the main area.
@@ -107,6 +144,10 @@ python browser.py
 
 ```bash
 python test_browser.py
+```
+
+```bash
+python dom_parser.py
 ```
 
 ## Next Steps (Ideas)
