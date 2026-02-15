@@ -12,12 +12,25 @@ This project is a first step toward building a custom web browser using Python a
 - Download handling with a save dialog.
 - Simple right-click context menu (back/forward/reload/copy URL).
 - Optional dark mode styling.
+- Step 1 completed: raw socket networking with HTTPS to fetch HTML.
 
 ## Files
 
 - `advanced_browser.py`: Main application code.
+- `network.py`: Step 1 networking proof of concept (raw sockets + HTTPS).
 - `history.json`: Stored browsing history.
 - `bookmarks.json`: Stored bookmarks.
+
+## Step 1 Completed: Networking (Raw Sockets + HTTPS)
+
+The `network.py` script proves the browser can connect to a real server, negotiate HTTPS, send an HTTP GET request, and parse the response to extract the HTML body. This is the foundation for building a renderer later.
+
+What it does:
+
+- Connects to a website server (example.com).
+- Uses SSL for HTTPS encryption.
+- Sends a valid HTTP GET request.
+- Receives the response and extracts the HTML body.
 
 ## How It Works (High Level)
 
@@ -30,6 +43,10 @@ This project is a first step toward building a custom web browser using Python a
 
 ```bash
 python advanced_browser.py
+```
+
+```bash
+python network.py
 ```
 
 ## Next Steps (Ideas)
