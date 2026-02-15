@@ -20,6 +20,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 6 completed: styling system with mini CSS support.
 - Step 7 completed: layout engine to calculate text positions and line breaks.
 - Step 8 completed: rendering engine to draw the display list to the screen.
+- Step 9 completed: scrolling system for navigating long pages.
 
 ## Files
 
@@ -217,6 +218,40 @@ Real browser concept:
 - Our browser uses a simplified mini renderer
 
 The render function in `browser.py` handles scrolling and redraws the canvas whenever needed (on scroll, page load, etc.).
+
+## Step 9 Completed: Add Scrolling
+
+Most web pages are longer than the window height, so the browser needs a scrolling system to view content that doesn't fit on screen.
+
+Why scrolling is needed:
+
+- Pages are often longer than the canvas height
+- Users need to navigate to content below the fold
+
+How scrolling works:
+
+Scrolling doesn't move the page content - it moves the **viewport** (what you see).
+
+Implementation:
+
+1. Store a scroll offset variable: `scroll_y = 0`
+2. When mouse wheel scrolls down: `scroll_y += 50`
+3. When drawing text, adjust y-coordinate: `draw_y = y - scroll_y`
+
+This makes text appear to move upward as you scroll down.
+
+Example in render function:
+
+```python
+for x, y, word, color, underline, font in self.display_list:
+    draw_y = y - self.scroll_y
+    canvas.create_text(x, draw_y, text=word, font=font)
+```
+
+The browser supports:
+- Mouse wheel scrolling
+- Arrow key navigation (Up/Down)
+- Scroll bounds (can't scroll above the page)
 
 ## How It Works (High Level)
 
