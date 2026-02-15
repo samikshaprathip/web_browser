@@ -18,6 +18,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 4 completed: basic HTML tag stripping to extract text.
 - Step 5 completed: real HTML parser with DOM tree structure.
 - Step 6 completed: styling system with mini CSS support.
+- Step 7 completed: layout engine to calculate text positions and line breaks.
 
 ## Files
 
@@ -28,6 +29,7 @@ This project is a first step toward building a custom web browser using Python a
 - `test_browser.py`: Step 4 quick test to print extracted text.
 - `dom_parser.py`: Step 5 DOM tree builder (tokenization + tree structure).
 - `style_engine.py`: Step 6 styling engine (applies font size, bold, italic, color).
+- `layout_engine.py`: Step 7 layout engine (calculates coordinates and line breaks).
 - `history.json`: Stored browsing history.
 - `bookmarks.json`: Stored bookmarks.
 
@@ -150,6 +152,44 @@ Each node now has:
 
 This prepares the DOM for rendering, where the browser can draw each element with the correct visual properties.
 
+## Step 7 Completed: Layout Engine (Calculate Positions)
+
+Styling tells the browser *how* elements should look, but the layout engine determines *where* to place them on the screen. It calculates exact coordinates for every piece of text and handles line breaks.
+
+Why layout is needed:
+
+- Determine where text goes (x, y coordinates)
+- Handle line wrapping when text reaches the window edge
+- Add spacing between paragraphs
+- Calculate vertical positioning
+
+How it works:
+
+The browser uses a flow layout system:
+
+1. Text flows left to right
+2. When text reaches the window width → wrap to next line
+3. Block elements (like `<p>`) add vertical spacing
+
+Example:
+
+```
+Window width = 500px
+Text: "Hello welcome to my browser project"
+```
+
+If "browser project" doesn't fit on the same line, it wraps to the next line.
+
+Layout output (display list):
+
+```python
+[("Hello", x=10, y=10, font="normal"),
+ ("Samiksha", x=70, y=10, font="bold"),
+ ("Welcome", x=10, y=40, font="normal")]
+```
+
+Now every piece of text has exact pixel coordinates, ready for rendering.
+
 ## How It Works (High Level)
 
 1. The app starts a `QMainWindow` and adds a `QTabWidget` as the main area.
@@ -185,6 +225,10 @@ python dom_parser.py
 
 ```bash
 python style_engine.py
+```
+
+```bash
+python layout_engine.py
 ```
 
 ## Next Steps (Ideas)
