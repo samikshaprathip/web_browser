@@ -21,6 +21,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 7 completed: layout engine to calculate text positions and line breaks.
 - Step 8 completed: rendering engine to draw the display list to the screen.
 - Step 9 completed: scrolling system for navigating long pages.
+- Step 10 completed: link clicking with clickable area detection.
 
 ## Files
 
@@ -252,6 +253,54 @@ The browser supports:
 - Mouse wheel scrolling
 - Arrow key navigation (Up/Down)
 - Scroll bounds (can't scroll above the page)
+
+## Step 10 Completed: Add Link Clicking
+
+Links are a fundamental part of the web. The browser must recognize `<a>` tags, style them differently, and make them clickable.
+
+What links need:
+
+- Draw text in **blue**
+- Add an **underline**
+- Store the clickable area (bounding box)
+- Detect mouse clicks
+
+How link clicking works:
+
+1. **During layout**: When the browser encounters `<a href="URL">`, it stores the link rectangle:
+
+```python
+link_area = (x1, y1, x2, y2, url)
+```
+
+2. **During click**: When the user clicks at position `(mx, my)`, the browser:
+   - Checks if the mouse is inside any link rectangle
+   - If yes, loads that URL
+   - Downloads the new page
+   - Re-renders
+
+Example:
+
+```html
+<a href="https://google.com">Google</a>
+```
+
+The browser:
+- Draws "Google" in blue with underline
+- Stores: `(10, 50, 80, 70, "https://google.com")`
+- On click at `(45, 60)` → opens `https://google.com`
+
+Implementation in `browser.py`:
+```python
+def on_click(self, event):
+    click_x = event.x
+    click_y = event.y + self.scroll_y
+    
+    for x1, y1, x2, y2, url in self.links:
+        if x1 <= click_x <= x2 and y1 <= click_y <= y2:
+            self.load_page(url)
+            return
+```
 
 ## How It Works (High Level)
 

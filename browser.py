@@ -4,7 +4,20 @@ from layout import LayoutEngine
 
 WIDTH, HEIGHT = 900, 650
 TOPBAR_HEIGHT = 55
+TABBAR_HEIGHT = 35
 SCROLL_STEP = 50
+
+
+class Tab:
+    def __init__(self, url="home://"):
+        self.url = url
+        self.scroll_y = 0
+        self.page_height = 0
+        self.display_list = []
+        self.links = []
+
+        self.history = []
+        self.history_index = -1
 
 
 class Browser:
@@ -14,14 +27,26 @@ class Browser:
         self.window.geometry(f"{WIDTH}x{HEIGHT}")
         self.window.configure(bg="#ffd6e8")
 
-        self.scroll_y = 0
-        self.page_height = 0
+        # Tabs
+        self.tabs = []
+        self.current_tab_index = 0
 
-        self.display_list = []
-        self.links = []
+        # ------------------- TAB BAR -------------------
+        self.tab_bar = tk.Frame(self.window, bg="#ff77b7", height=TABBAR_HEIGHT)
+        self.tab_bar.pack(fill="x")
 
-        self.history = []
-        self.history_index = -1
+        self.tab_buttons = []
+
+        self.new_tab_btn = tk.Button(
+            self.tab_bar,
+            text="➕",
+            bg="#ff4fa3",
+            fg="white",
+            font=("Arial", 11, "bold"),
+            relief="flat",
+            command=self.new_tab
+        )
+        self.new_tab_btn.pack(side="right", padx=5, pady=3)
 
         # ------------------- TOP BAR -------------------
         self.top_bar = tk.Frame(self.window, bg="#ff9ecb", height=TOPBAR_HEIGHT)
@@ -93,11 +118,9 @@ class Browser:
         self.main_frame = tk.Frame(self.window)
         self.main_frame.pack(fill="both", expand=True)
 
-        # Canvas
         self.canvas = tk.Canvas(self.main_frame, bg="white")
         self.canvas.pack(side="left", fill="both", expand=True)
 
-        # Scrollbar
         self.scrollbar = tk.Scrollbar(self.main_frame, orient="vertical", command=self.scrollbar_move)
         self.scrollbar.pack(side="right", fill="y")
 
@@ -109,10 +132,14 @@ class Browser:
         self.url_entry.bind("<Return>", self.go_to_url)
         self.canvas.bind("<Button-1>", self.on_click)
 
-        # Load home
-        self.go_home()
+        # Start with 1 tab
+        self.new_tab()
 
         self.window.mainloop()
+
+    # ------------------- CURRENT TAB -------------------
+    def current_tab(self):
+        return self.tabs[self.current_tab_index]
 
     # ------------------- HOME PAGE -------------------
     def home_page_html(self):
@@ -137,6 +164,8 @@ class Browser:
 
     # ------------------- LOAD PAGE -------------------
     def load_page(self, url, add_to_history=True):
+        tab = self.current_tab()
+
         try:
             if url == "home://":
                 html = self.home_page_html()
@@ -144,82 +173,128 @@ class Browser:
                 html = request(url)
 
             engine = LayoutEngine(html)
-            self.display_list, self.links = engine.parse()
+            tab.display_list, tab.links = engine.parse()
 
-            # Calculate page height
-            if self.display_list:
-                max_y = max(item[1] for item in self.display_list)
-                self.page_height = max_y + 100
+            if tab.display_list:
+                max_y = max(item[1] for item in tab.display_list)
+                tab.page_height = max_y + 100
             else:
-                self.page_height = 0
+                tab.page_height = 0
 
         except Exception as e:
-            self.display_list = [(20, 20, f"❌ Error loading page:\n\n{e}", "red", False, ("Arial", 14))]
-            self.links = []
-            self.page_height = 0
+            tab.display_list = [(20, 20, f"❌ Error loading page:\n\n{e}", "red", False, ("Arial", 14))]
+            tab.links = []
+            tab.page_height = 0
 
-        self.scroll_y = 0
+        tab.scroll_y = 0
+        tab.url = url
+
         self.update_scrollbar()
         self.render()
 
         if add_to_history:
-            if self.history_index < len(self.history) - 1:
-                self.history = self.history[: self.history_index + 1]
+            if tab.history_index < len(tab.history) - 1:
+                tab.history = tab.history[: tab.history_index + 1]
 
-            self.history.append(url)
-            self.history_index += 1
+            tab.history.append(url)
+            tab.history_index += 1
 
-    # ------------------- SCROLLBAR UPDATE -------------------
+        self.refresh_tabs()
+
+    # ------------------- TABS SYSTEM -------------------
+    def new_tab(self):
+        tab = Tab("home://")
+        self.tabs.append(tab)
+        self.current_tab_index = len(self.tabs) - 1
+        self.load_page("home://")
+        self.refresh_tabs()
+
+    def switch_tab(self, index):
+        self.current_tab_index = index
+        tab = self.current_tab()
+
+        self.url_entry.delete(0, tk.END)
+        self.url_entry.insert(0, tab.url)
+
+        self.update_scrollbar()
+        self.render()
+        self.refresh_tabs()
+
+    def refresh_tabs(self):
+        for btn in self.tab_buttons:
+            btn.destroy()
+
+        self.tab_buttons = []
+
+        for i, tab in enumerate(self.tabs):
+            title = "Home" if tab.url == "home://" else tab.url.replace("https://", "").replace("http://", "")
+            if len(title) > 15:
+                title = title[:15] + "..."
+
+            bg_color = "#ff4fa3" if i == self.current_tab_index else "#ffb3d9"
+
+            btn = tk.Button(
+                self.tab_bar,
+                text=title,
+                bg=bg_color,
+                fg="white",
+                font=("Arial", 10, "bold"),
+                relief="flat",
+                command=lambda i=i: self.switch_tab(i)
+            )
+            btn.pack(side="left", padx=3, pady=5)
+
+            self.tab_buttons.append(btn)
+
+    # ------------------- SCROLLBAR -------------------
     def update_scrollbar(self):
-        visible_height = HEIGHT - TOPBAR_HEIGHT
-        if self.page_height <= 0:
+        tab = self.current_tab()
+        visible_height = HEIGHT - TOPBAR_HEIGHT - TABBAR_HEIGHT
+
+        if tab.page_height <= visible_height:
             self.scrollbar.set(0, 1)
             return
 
-        if self.page_height <= visible_height:
-            self.scrollbar.set(0, 1)
-            return
-
-        start = self.scroll_y / self.page_height
-        end = (self.scroll_y + visible_height) / self.page_height
+        start = tab.scroll_y / tab.page_height
+        end = (tab.scroll_y + visible_height) / tab.page_height
 
         if end > 1:
             end = 1
 
         self.scrollbar.set(start, end)
 
-    # ------------------- SCROLLBAR CONTROL -------------------
     def scrollbar_move(self, *args):
-        if self.page_height <= 0:
-            return
+        tab = self.current_tab()
+        visible_height = HEIGHT - TOPBAR_HEIGHT - TABBAR_HEIGHT
 
-        visible_height = HEIGHT - TOPBAR_HEIGHT
+        if tab.page_height <= visible_height:
+            return
 
         if args[0] == "moveto":
             fraction = float(args[1])
-            self.scroll_y = int(fraction * self.page_height)
+            tab.scroll_y = int(fraction * tab.page_height)
 
         elif args[0] == "scroll":
             amount = int(args[1])
-            self.scroll_y += amount * SCROLL_STEP
+            tab.scroll_y += amount * SCROLL_STEP
 
         self.limit_scroll()
         self.update_scrollbar()
         self.render()
 
-    # ------------------- SCROLL LIMIT -------------------
     def limit_scroll(self):
-        visible_height = HEIGHT - TOPBAR_HEIGHT
+        tab = self.current_tab()
+        visible_height = HEIGHT - TOPBAR_HEIGHT - TABBAR_HEIGHT
 
-        if self.scroll_y < 0:
-            self.scroll_y = 0
+        if tab.scroll_y < 0:
+            tab.scroll_y = 0
 
-        max_scroll = self.page_height - visible_height
+        max_scroll = tab.page_height - visible_height
         if max_scroll < 0:
             max_scroll = 0
 
-        if self.scroll_y > max_scroll:
-            self.scroll_y = max_scroll
+        if tab.scroll_y > max_scroll:
+            tab.scroll_y = max_scroll
 
     # ------------------- NAVIGATION -------------------
     def go_to_url(self, event=None):
@@ -227,7 +302,7 @@ class Browser:
         if url == "":
             return
 
-        if not url.startswith("http"):
+        if not url.startswith("http") and url != "home://":
             url = "https://" + url
 
         self.load_page(url)
@@ -238,27 +313,36 @@ class Browser:
         self.load_page("home://")
 
     def go_back(self):
-        if self.history_index > 0:
-            self.history_index -= 1
-            url = self.history[self.history_index]
+        tab = self.current_tab()
+
+        if tab.history_index > 0:
+            tab.history_index -= 1
+            url = tab.history[tab.history_index]
+
             self.url_entry.delete(0, tk.END)
             self.url_entry.insert(0, url)
+
             self.load_page(url, add_to_history=False)
 
     def go_forward(self):
-        if self.history_index < len(self.history) - 1:
-            self.history_index += 1
-            url = self.history[self.history_index]
+        tab = self.current_tab()
+
+        if tab.history_index < len(tab.history) - 1:
+            tab.history_index += 1
+            url = tab.history[tab.history_index]
+
             self.url_entry.delete(0, tk.END)
             self.url_entry.insert(0, url)
+
             self.load_page(url, add_to_history=False)
 
     # ------------------- RENDER -------------------
     def render(self):
+        tab = self.current_tab()
         self.canvas.delete("all")
 
-        for x, y, word, color, underline, font in self.display_list:
-            draw_y = y - self.scroll_y
+        for x, y, word, color, underline, font in tab.display_list:
+            draw_y = y - tab.scroll_y
 
             text_id = self.canvas.create_text(
                 x, draw_y,
@@ -276,10 +360,11 @@ class Browser:
 
     # ------------------- LINK CLICK -------------------
     def on_click(self, event):
+        tab = self.current_tab()
         click_x = event.x
-        click_y = event.y + self.scroll_y
+        click_y = event.y + tab.scroll_y
 
-        for x1, y1, x2, y2, url in self.links:
+        for x1, y1, x2, y2, url in tab.links:
             if x1 <= click_x <= x2 and y1 <= click_y <= y2:
                 self.url_entry.delete(0, tk.END)
                 self.url_entry.insert(0, url)
@@ -288,23 +373,29 @@ class Browser:
 
     # ------------------- SCROLL EVENTS -------------------
     def on_scroll(self, event):
+        tab = self.current_tab()
+
         if event.delta < 0:
-            self.scroll_y += SCROLL_STEP
+            tab.scroll_y += SCROLL_STEP
         else:
-            self.scroll_y -= SCROLL_STEP
+            tab.scroll_y -= SCROLL_STEP
 
         self.limit_scroll()
         self.update_scrollbar()
         self.render()
 
     def scroll_down(self, event=None):
-        self.scroll_y += SCROLL_STEP
+        tab = self.current_tab()
+        tab.scroll_y += SCROLL_STEP
+
         self.limit_scroll()
         self.update_scrollbar()
         self.render()
 
     def scroll_up(self, event=None):
-        self.scroll_y -= SCROLL_STEP
+        tab = self.current_tab()
+        tab.scroll_y -= SCROLL_STEP
+
         self.limit_scroll()
         self.update_scrollbar()
         self.render()
