@@ -22,6 +22,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 8 completed: rendering engine to draw the display list to the screen.
 - Step 9 completed: scrolling system for navigating long pages.
 - Step 10 completed: link clicking with clickable area detection.
+- Step 11 completed: address bar for typing and navigating to URLs.
 
 ## Files
 
@@ -301,6 +302,54 @@ def on_click(self, event):
             self.load_page(url)
             return
 ```
+
+## Step 11 Completed: Add Address Bar
+
+An address bar makes the browser interactive, allowing users to type URLs and navigate to any website.
+
+Why an address bar is needed:
+
+- Without it, the browser can only load hardcoded URLs
+- Users need to type and edit URLs
+- Shows the current page URL
+
+How the address bar works:
+
+1. **Display**: A text input field at the top of the window
+2. **Input handling**: The browser stores the typed text:
+
+```python
+typed_url = ""
+```
+
+3. **Key events**: When the user types:
+   - Each character is added to the string
+   - The bar is redrawn with updated text
+
+4. **Navigation**: When Enter is pressed:
+   - Load the typed URL
+   - Download the page
+   - Render it
+
+Implementation in `browser.py`:
+
+```python
+self.url_entry = tk.Entry(self.top_bar, font=("Arial", 13), width=45)
+self.url_entry.bind("<Return>", self.go_to_url)
+
+def go_to_url(self, event=None):
+    url = self.url_entry.get().strip()
+    if not url.startswith("http"):
+        url = "https://" + url
+    self.load_page(url)
+```
+
+Features:
+- Displays current URL
+- Accepts user input
+- Auto-adds `https://` if missing
+- Navigation buttons (back, forward, home)
+- "Go" button for mouse-based navigation
 
 ## How It Works (High Level)
 

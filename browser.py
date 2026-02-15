@@ -4,7 +4,7 @@ from layout import LayoutEngine
 
 WIDTH, HEIGHT = 900, 650
 TOPBAR_HEIGHT = 55
-TABBAR_HEIGHT = 35
+TABBAR_HEIGHT = 40
 SCROLL_STEP = 50
 
 
@@ -35,7 +35,7 @@ class Browser:
         self.tab_bar = tk.Frame(self.window, bg="#ff77b7", height=TABBAR_HEIGHT)
         self.tab_bar.pack(fill="x")
 
-        self.tab_buttons = []
+        self.tab_frames = []
 
         self.new_tab_btn = tk.Button(
             self.tab_bar,
@@ -46,7 +46,7 @@ class Browser:
             relief="flat",
             command=self.new_tab
         )
-        self.new_tab_btn.pack(side="right", padx=5, pady=3)
+        self.new_tab_btn.pack(side="right", padx=6, pady=6)
 
         # ------------------- TOP BAR -------------------
         self.top_bar = tk.Frame(self.window, bg="#ff9ecb", height=TOPBAR_HEIGHT)
@@ -201,13 +201,31 @@ class Browser:
 
         self.refresh_tabs()
 
-    # ------------------- TABS SYSTEM -------------------
+    # ------------------- TAB SYSTEM -------------------
     def new_tab(self):
         tab = Tab("home://")
         self.tabs.append(tab)
         self.current_tab_index = len(self.tabs) - 1
         self.load_page("home://")
         self.refresh_tabs()
+
+    def close_tab(self, index):
+        # if only one tab, don't close fully
+        if len(self.tabs) == 1:
+            self.tabs[0] = Tab("home://")
+            self.current_tab_index = 0
+            self.load_page("home://")
+            self.refresh_tabs()
+            return
+
+        # delete the tab
+        del self.tabs[index]
+
+        # adjust current tab index
+        if self.current_tab_index >= len(self.tabs):
+            self.current_tab_index = len(self.tabs) - 1
+
+        self.switch_tab(self.current_tab_index)
 
     def switch_tab(self, index):
         self.current_tab_index = index
@@ -221,20 +239,23 @@ class Browser:
         self.refresh_tabs()
 
     def refresh_tabs(self):
-        for btn in self.tab_buttons:
-            btn.destroy()
+        for frame in self.tab_frames:
+            frame.destroy()
 
-        self.tab_buttons = []
+        self.tab_frames = []
 
         for i, tab in enumerate(self.tabs):
             title = "Home" if tab.url == "home://" else tab.url.replace("https://", "").replace("http://", "")
-            if len(title) > 15:
-                title = title[:15] + "..."
+            if len(title) > 12:
+                title = title[:12] + "..."
 
             bg_color = "#ff4fa3" if i == self.current_tab_index else "#ffb3d9"
 
-            btn = tk.Button(
-                self.tab_bar,
+            tab_frame = tk.Frame(self.tab_bar, bg=bg_color)
+            tab_frame.pack(side="left", padx=4, pady=6)
+
+            tab_button = tk.Button(
+                tab_frame,
                 text=title,
                 bg=bg_color,
                 fg="white",
@@ -242,9 +263,20 @@ class Browser:
                 relief="flat",
                 command=lambda i=i: self.switch_tab(i)
             )
-            btn.pack(side="left", padx=3, pady=5)
+            tab_button.pack(side="left", padx=4)
 
-            self.tab_buttons.append(btn)
+            close_button = tk.Button(
+                tab_frame,
+                text="❌",
+                bg=bg_color,
+                fg="white",
+                font=("Arial", 9, "bold"),
+                relief="flat",
+                command=lambda i=i: self.close_tab(i)
+            )
+            close_button.pack(side="left", padx=2)
+
+            self.tab_frames.append(tab_frame)
 
     # ------------------- SCROLLBAR -------------------
     def update_scrollbar(self):
