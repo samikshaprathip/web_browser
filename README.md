@@ -14,12 +14,14 @@ This project is a first step toward building a custom web browser using Python a
 - Optional dark mode styling.
 - Step 1 completed: raw socket networking with HTTPS to fetch HTML.
 - Step 2 completed: separate HTTP headers from the body.
+- Step 3 completed: basic GUI window with a Tkinter canvas.
 
 ## Files
 
 - `advanced_browser.py`: Main application code.
 - `network.py`: Step 1 networking proof of concept (raw sockets + HTTPS).
 - `html_parser.py`: Step 2 response parsing (headers vs body).
+- `browser.py`: Step 3 GUI window with a drawing canvas.
 - `history.json`: Stored browsing history.
 - `bookmarks.json`: Stored bookmarks.
 
@@ -49,6 +51,21 @@ Example:
 headers, body = response.split("\r\n\r\n", 1)
 ```
 
+## Step 3 Completed: Create a Window (GUI)
+
+A browser needs a window to render content. For this step, a Tkinter `Canvas` acts like a whiteboard where the browser can draw text and shapes, which is a step toward rendering HTML as pixels.
+
+Why Canvas:
+
+- Lets us draw text, rectangles, lines, and images.
+- Provides a simple way to think about converting HTML into pixels.
+
+Example:
+
+```python
+canvas.create_text(100, 50, text="Hello")
+```
+
 ## How It Works (High Level)
 
 1. The app starts a `QMainWindow` and adds a `QTabWidget` as the main area.
@@ -68,6 +85,10 @@ python network.py
 
 ```bash
 python html_parser.py
+```
+
+```bash
+python browser.py
 ```
 
 ## Next Steps (Ideas)
