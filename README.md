@@ -13,11 +13,13 @@ This project is a first step toward building a custom web browser using Python a
 - Simple right-click context menu (back/forward/reload/copy URL).
 - Optional dark mode styling.
 - Step 1 completed: raw socket networking with HTTPS to fetch HTML.
+- Step 2 completed: separate HTTP headers from the body.
 
 ## Files
 
 - `advanced_browser.py`: Main application code.
 - `network.py`: Step 1 networking proof of concept (raw sockets + HTTPS).
+- `html_parser.py`: Step 2 response parsing (headers vs body).
 - `history.json`: Stored browsing history.
 - `bookmarks.json`: Stored bookmarks.
 
@@ -31,6 +33,21 @@ What it does:
 - Uses SSL for HTTPS encryption.
 - Sends a valid HTTP GET request.
 - Receives the response and extracts the HTML body.
+
+## Step 2 Completed: Separate Headers and Body
+
+Server responses contain HTTP headers and the HTML body in the same payload. The browser must split them so it can read metadata (headers) and then render the actual HTML (body).
+
+How it works:
+
+- HTTP headers end with a blank line: `\r\n\r\n`.
+- Split the response once at that marker to separate headers and body.
+
+Example:
+
+```python
+headers, body = response.split("\r\n\r\n", 1)
+```
 
 ## How It Works (High Level)
 
@@ -47,6 +64,10 @@ python advanced_browser.py
 
 ```bash
 python network.py
+```
+
+```bash
+python html_parser.py
 ```
 
 ## Next Steps (Ideas)
