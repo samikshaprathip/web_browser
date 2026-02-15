@@ -1,6 +1,6 @@
 import tkinter as tk
 from network import request
-from html_parser import extract_text
+from layout import LayoutEngine
 
 WIDTH, HEIGHT = 900, 650
 SCROLL_STEP = 40
@@ -14,9 +14,10 @@ class Browser:
         self.window.configure(bg="#ffd6e8")
 
         self.scroll_y = 0
-        self.page_text = ""
 
-        # History system
+        self.display_list = []
+        self.links = []
+
         self.history = []
         self.history_index = -1
 
@@ -33,7 +34,6 @@ class Browser:
         )
         self.title_label.pack(side="left", padx=10)
 
-        # Buttons
         self.back_btn = tk.Button(
             self.top_bar,
             text="⬅️",
@@ -67,7 +67,6 @@ class Browser:
         )
         self.home_btn.pack(side="left", padx=8)
 
-        # URL bar
         self.url_entry = tk.Entry(
             self.top_bar,
             font=("Arial", 13),
@@ -92,33 +91,35 @@ class Browser:
         self.canvas = tk.Canvas(self.window, bg="white")
         self.canvas.pack(fill="both", expand=True)
 
-        # Scroll + keys
+        # Bindings
         self.window.bind("<MouseWheel>", self.on_scroll)
         self.window.bind("<Down>", self.scroll_down)
         self.window.bind("<Up>", self.scroll_up)
-
-        # Enter loads URL
         self.url_entry.bind("<Return>", self.go_to_url)
 
-        # Load Home Page
+        # Link click binding
+        self.canvas.bind("<Button-1>", self.on_click)
+
+        # Load home
         self.go_home()
 
         self.window.mainloop()
 
-    # ------------------- CUSTOM HOME PAGE -------------------
+    # ------------------- HOME PAGE -------------------
     def home_page_html(self):
         return f"""
         <html>
-        <head><title>Pinkie Browser Home</title></head>
         <body>
         <h1>🌸 Welcome to Pinkie Browser 💖</h1>
         <p>Hello Samiksha 👑</p>
-        <p>This is your own browser made from scratch in Python.</p>
-        <p>Try typing:</p>
-        <p>example.com</p>
-        <p>httpbin.org/html</p>
-        <p>info.cern.ch</p>
-        <p>Made with 💕 in Python</p>
+        <p>This is your browser built from scratch.</p>
+
+        <p>Try these websites:</p>
+        <p><a href="https://example.com">Example Domain</a></p>
+        <p><a href="https://httpbin.org/html">HttpBin HTML</a></p>
+        <p><a href="https://info.cern.ch">First Website Ever</a></p>
+
+        <p>Made with 💕</p>
         </body>
         </html>
         """
@@ -131,15 +132,16 @@ class Browser:
             else:
                 html = request(url)
 
-            self.page_text = extract_text(html)
+            engine = LayoutEngine(html)
+            self.display_list, self.links = engine.parse()
 
         except Exception as e:
-            self.page_text = f"❌ Error loading page:\n\n{e}"
+            self.display_list = [(20, 20, f"❌ Error loading page:\n\n{e}", "red", False)]
+            self.links = []
 
         self.scroll_y = 0
         self.render()
 
-        # Add to history
         if add_to_history:
             if self.history_index < len(self.history) - 1:
                 self.history = self.history[: self.history_index + 1]
@@ -147,7 +149,7 @@ class Browser:
             self.history.append(url)
             self.history_index += 1
 
-    # ------------------- URL NAVIGATION -------------------
+    # ------------------- NAVIGATION -------------------
     def go_to_url(self, event=None):
         url = self.url_entry.get().strip()
 
@@ -164,7 +166,6 @@ class Browser:
         self.url_entry.insert(0, "home://")
         self.load_page("home://")
 
-    # ------------------- BACK / FORWARD -------------------
     def go_back(self):
         if self.history_index > 0:
             self.history_index -= 1
@@ -185,16 +186,36 @@ class Browser:
     def render(self):
         self.canvas.delete("all")
 
-        self.canvas.create_text(
-            20, 20 - self.scroll_y,
-            anchor="nw",
-            text=self.page_text,
-            width=WIDTH - 40,
-            font=("Arial", 14),
-            fill="black"
-        )
+        for x, y, word, color, underline in self.display_list:
+            draw_y = y - self.scroll_y
 
-    # ------------------- SCROLLING -------------------
+            text_id = self.canvas.create_text(
+                x, draw_y,
+                anchor="nw",
+                text=word,
+                font=("Arial", 14),
+                fill=color
+            )
+
+            if underline:
+                bbox = self.canvas.bbox(text_id)
+                if bbox:
+                    x1, y1, x2, y2 = bbox
+                    self.canvas.create_line(x1, y2, x2, y2, fill=color)
+
+    # ------------------- CLICK LINKS -------------------
+    def on_click(self, event):
+        click_x = event.x
+        click_y = event.y + self.scroll_y
+
+        for x1, y1, x2, y2, url in self.links:
+            if x1 <= click_x <= x2 and y1 <= click_y <= y2:
+                self.url_entry.delete(0, tk.END)
+                self.url_entry.insert(0, url)
+                self.load_page(url)
+                return
+
+    # ------------------- SCROLL -------------------
     def on_scroll(self, event):
         if event.delta < 0:
             self.scroll_y += SCROLL_STEP
