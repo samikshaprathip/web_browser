@@ -186,14 +186,14 @@ class Browser:
     def render(self):
         self.canvas.delete("all")
 
-        for x, y, word, color, underline in self.display_list:
+        for x, y, word, color, underline, font in self.display_list:
             draw_y = y - self.scroll_y
 
             text_id = self.canvas.create_text(
                 x, draw_y,
                 anchor="nw",
                 text=word,
-                font=("Arial", 14),
+                font=font,
                 fill=color
             )
 

@@ -19,6 +19,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 5 completed: real HTML parser with DOM tree structure.
 - Step 6 completed: styling system with mini CSS support.
 - Step 7 completed: layout engine to calculate text positions and line breaks.
+- Step 8 completed: rendering engine to draw the display list to the screen.
 
 ## Files
 
@@ -30,6 +31,7 @@ This project is a first step toward building a custom web browser using Python a
 - `dom_parser.py`: Step 5 DOM tree builder (tokenization + tree structure).
 - `style_engine.py`: Step 6 styling engine (applies font size, bold, italic, color).
 - `layout_engine.py`: Step 7 layout engine (calculates coordinates and line breaks).
+- `layout.py`: Combined layout and rendering logic.
 - `history.json`: Stored browsing history.
 - `bookmarks.json`: Stored bookmarks.
 
@@ -189,6 +191,32 @@ Layout output (display list):
 ```
 
 Now every piece of text has exact pixel coordinates, ready for rendering.
+
+## Step 8 Completed: Rendering Engine (Drawing)
+
+The rendering engine takes the display list from the layout engine and draws it to the screen using the Tkinter canvas.
+
+What rendering does:
+
+- Loops through the display list
+- Draws each text element at its calculated (x, y) position
+- Applies the correct font, color, and underline styles
+
+Example:
+
+```python
+canvas.create_text(x, y, text=word, font=font, fill=color)
+```
+
+Now the webpage becomes visible on screen.
+
+Real browser concept:
+
+- Chrome uses the **Blink** rendering engine
+- Firefox uses **Gecko**
+- Our browser uses a simplified mini renderer
+
+The render function in `browser.py` handles scrolling and redraws the canvas whenever needed (on scroll, page load, etc.).
 
 ## How It Works (High Level)
 
