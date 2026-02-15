@@ -17,6 +17,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 3 completed: basic GUI window with a Tkinter canvas.
 - Step 4 completed: basic HTML tag stripping to extract text.
 - Step 5 completed: real HTML parser with DOM tree structure.
+- Step 6 completed: styling system with mini CSS support.
 
 ## Files
 
@@ -26,6 +27,7 @@ This project is a first step toward building a custom web browser using Python a
 - `browser.py`: Step 3 GUI window with a drawing canvas.
 - `test_browser.py`: Step 4 quick test to print extracted text.
 - `dom_parser.py`: Step 5 DOM tree builder (tokenization + tree structure).
+- `style_engine.py`: Step 6 styling engine (applies font size, bold, italic, color).
 - `history.json`: Stored browsing history.
 - `bookmarks.json`: Stored bookmarks.
 
@@ -117,6 +119,37 @@ Example:
 - `</b>` → pop node from stack
 - `</p>` → pop node from stack
 
+## Step 6 Completed: Styling (Mini CSS Support)
+
+HTML defines content structure, but styling defines how it looks. The browser must apply visual properties like font size, bold, italic, and color to each element.
+
+What styling does:
+
+- `<h1>` → large bold font
+- `<b>` → bold text
+- `<i>` → italic text
+- `<p>` → normal paragraph
+
+How it works:
+
+The browser walks through the DOM tree and assigns style properties to each node based on its tag:
+
+```python
+if node.tag == "h1":
+    node.font_size = 32
+    node.bold = True
+```
+
+Each node now has:
+
+- Text content
+- Font size
+- Font weight (bold/normal)
+- Font style (italic/normal)
+- Color
+
+This prepares the DOM for rendering, where the browser can draw each element with the correct visual properties.
+
 ## How It Works (High Level)
 
 1. The app starts a `QMainWindow` and adds a `QTabWidget` as the main area.
@@ -148,6 +181,10 @@ python test_browser.py
 
 ```bash
 python dom_parser.py
+```
+
+```bash
+python style_engine.py
 ```
 
 ## Next Steps (Ideas)
