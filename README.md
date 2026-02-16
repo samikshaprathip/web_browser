@@ -25,6 +25,8 @@ This project is a first step toward building a custom web browser using Python a
 - Step 11 completed: address bar for typing and navigating to URLs.
 - Step 12 completed: history tracking for back/forward navigation.
 - Step 13 completed: bookmarks saved to a JSON file.
+- Step 14 completed: image support using Pillow and Tkinter.
+- Step 13 completed: bookmarks saved to a JSON file.
 
 ## Files
 
@@ -383,6 +385,52 @@ Forward button:
 current_index += 1
 load(history[current_index])
 ```
+
+## Step 13 Completed: Add Bookmarks
+
+Bookmarks let the browser save favorite URLs and keep them even after closing the app.
+
+How it works:
+
+- Store bookmarked URLs in a list
+- Save the list to a file named `bookmarks.json`
+- Load the list on startup
+
+Example:
+
+```python
+bookmarks = ["https://google.com", "https://github.com"]
+```
+
+Stored in `bookmarks.json`:
+
+```json
+[
+    "https://google.com",
+    "https://github.com"
+]
+```
+
+## Step 14 Completed: Add Image Support (Harder)
+
+Text is easy to render, but images require downloading binary data, decoding formats like PNG or JPG, and drawing pixels to the canvas.
+
+What image support involves:
+
+- Download the image file referenced by `<img src="...">`
+- Decode it with Pillow (`PIL.Image`)
+- Convert to a Tkinter-friendly `ImageTk` object
+- Draw it on the canvas at the right position
+
+Example:
+
+```python
+from PIL import Image, ImageTk
+```
+
+Real browser concept:
+
+Browsers include internal image decoders. Our mini browser uses Pillow as a simple decoder so images can be drawn on the canvas.
 
 ## Step 13 Completed: Add Bookmarks
 
