@@ -26,7 +26,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 12 completed: history tracking for back/forward navigation.
 - Step 13 completed: bookmarks saved to a JSON file.
 - Step 14 completed: image support using Pillow and Tkinter.
-- Step 13 completed: bookmarks saved to a JSON file.
+- Step 15 completed: permanent bookmarks with JSON load/save and delete links.
 
 ## Files
 
@@ -409,6 +409,29 @@ Stored in `bookmarks.json`:
     "https://google.com",
     "https://github.com"
 ]
+```
+
+## Step 15 Completed: Permanent Bookmarks using JSON
+
+Bookmarks are now persisted to disk so they survive app restarts.
+
+What was added:
+
+- `bookmarks.json` file to store the list
+- `load_bookmarks()` to read saved bookmarks on startup
+- `save_bookmarks()` to write bookmarks after changes
+- Delete links on the home page using `delete://` URLs
+
+Example file:
+
+```json
+[]
+```
+
+Delete link pattern:
+
+```html
+<a href="delete://https://example.com">❌</a>
 ```
 
 ## Step 14 Completed: Add Image Support (Harder)
