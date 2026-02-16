@@ -36,6 +36,9 @@ class Browser:
         self.bookmarks = []
         self.bookmark_file = "bookmarks.json"
         self.load_bookmarks()
+        self.history_file = "history.json"
+        self.global_history = []
+        self.load_global_history()
 
         # ------------------- TAB BAR -------------------
         self.tab_bar = tk.Frame(self.window, bg="#ff77b7", height=TABBAR_HEIGHT)
@@ -110,6 +113,17 @@ class Browser:
             command=self.add_bookmark
         )
         self.bookmark_btn.pack(side="left", padx=6)
+
+        self.history_btn = tk.Button(
+            self.top_bar,
+            text="📜",
+            bg="#ff4fa3",
+            fg="white",
+            font=("Arial", 12, "bold"),
+            relief="flat",
+            command=self.open_history
+        )
+        self.history_btn.pack(side="left", padx=6)
 
         self.url_entry = tk.Entry(
             self.top_bar,
@@ -200,6 +214,51 @@ class Browser:
         </html>
         """
 
+    def history_page_html(self):
+        history_html = "<h1>📜 Browsing History</h1>"
+
+        if not self.global_history:
+            history_html += "<p>No history yet 😭</p>"
+        else:
+            for item in self.global_history:
+                history_html += f'<p><a href="{item["url"]}">{item["title"]}</a> - {item["url"]}</p>'
+
+        history_html += '<p><a href="home://">⬅ Back to Home</a></p>'
+
+        return f"""
+        <html>
+        <body>
+        {history_html}
+        </body>
+        </html>
+        """
+
+    def load_global_history(self):
+        if os.path.exists(self.history_file):
+            try:
+                with open(self.history_file, "r") as f:
+                    self.global_history = json.load(f)
+            except Exception:
+                self.global_history = []
+        else:
+            self.global_history = []
+
+    def save_global_history(self):
+        with open(self.history_file, "w") as f:
+            json.dump(self.global_history, f, indent=4)
+
+    def add_to_global_history(self, url, title):
+        if url in ["home://", "history://"] or url.startswith("delete://"):
+            return
+
+        entry = {"url": url, "title": title}
+
+        self.global_history = [h for h in self.global_history if h["url"] != url]
+        self.global_history.insert(0, entry)
+        self.global_history = self.global_history[:50]
+
+        self.save_global_history()
+
     def load_bookmarks(self):
         if os.path.exists(self.bookmark_file):
             try:
@@ -225,6 +284,11 @@ class Browser:
             self.save_bookmarks()
 
         self.load_page("home://", add_to_history=False)
+
+    def open_history(self):
+        self.url_entry.delete(0, tk.END)
+        self.url_entry.insert(0, "history://")
+        self.load_page("history://", add_to_history=False)
 
     def extract_title(self, html):
         import re
@@ -288,10 +352,13 @@ class Browser:
 
             if url == "home://":
                 html = self.home_page_html()
+            elif url == "history://":
+                html = self.history_page_html()
             else:
                 html = request(url)
 
             tab.title = self.extract_title(html)
+            self.add_to_global_history(url, tab.title)
             engine = LayoutEngine(html)
             tab.display_list, tab.links = engine.parse()
 
