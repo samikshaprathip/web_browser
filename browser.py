@@ -125,6 +125,16 @@ class Browser:
         self.scrollbar = tk.Scrollbar(self.main_frame, orient="vertical", command=self.scrollbar_move)
         self.scrollbar.pack(side="right", fill="y")
 
+        # ------------------- LOADING BAR -------------------
+        self.loading_frame = tk.Frame(self.window, bg="#ffd6e8", height=10)
+        self.loading_frame.pack(fill="x")
+
+        self.loading_bar = tk.Canvas(self.loading_frame, height=8, bg="#ffd6e8", highlightthickness=0)
+        self.loading_bar.pack(fill="x")
+
+        self.loading_progress = 0
+        self.loading_active = False
+
         # Bindings
         self.window.bind("<MouseWheel>", self.on_scroll)
         self.window.bind("<Down>", self.scroll_down)
@@ -174,11 +184,45 @@ class Browser:
 
         return "Untitled Page"
 
+    def start_loading(self):
+        self.loading_active = True
+        self.loading_progress = 0
+        self.title_label.config(text="🌸 Loading...")
+        self.animate_loading()
+
+    def stop_loading(self):
+        self.loading_active = False
+        self.loading_bar.delete("all")
+        self.title_label.config(text="🌸 Pinkie Browser")
+
+    def animate_loading(self):
+        if not self.loading_active:
+            return
+
+        self.loading_bar.delete("all")
+
+        width = self.window.winfo_width()
+        self.loading_progress += 30
+
+        if self.loading_progress > width:
+            self.loading_progress = 0
+
+        self.loading_bar.create_rectangle(
+            0, 0,
+            self.loading_progress, 8,
+            fill="#ff4fa3",
+            outline=""
+        )
+
+        self.window.after(50, self.animate_loading)
+
     # ------------------- LOAD PAGE -------------------
     def load_page(self, url, add_to_history=True):
         tab = self.current_tab()
 
         try:
+            self.start_loading()
+
             if url == "home://":
                 html = self.home_page_html()
             else:
@@ -194,10 +238,13 @@ class Browser:
             else:
                 tab.page_height = 0
 
+            self.stop_loading()
+
         except Exception as e:
             tab.display_list = [(20, 20, f"❌ Error loading page:\n\n{e}", "red", False, ("Arial", 14))]
             tab.links = []
             tab.page_height = 0
+            self.stop_loading()
 
         tab.scroll_y = 0
         tab.url = url

@@ -24,6 +24,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 10 completed: link clicking with clickable area detection.
 - Step 11 completed: address bar for typing and navigating to URLs.
 - Step 12 completed: history tracking for back/forward navigation.
+- Step 13 completed: bookmarks saved to a JSON file.
 
 ## Files
 
@@ -381,6 +382,31 @@ Forward button:
 ```python
 current_index += 1
 load(history[current_index])
+```
+
+## Step 13 Completed: Add Bookmarks
+
+Bookmarks let the browser save favorite URLs and keep them even after closing the app.
+
+How it works:
+
+- Store bookmarked URLs in a list
+- Save the list to a file named `bookmarks.json`
+- Load the list on startup
+
+Example:
+
+```python
+bookmarks = ["https://google.com", "https://github.com"]
+```
+
+Stored in `bookmarks.json`:
+
+```json
+[
+    "https://google.com",
+    "https://github.com"
+]
 ```
 
 ## How It Works (High Level)
