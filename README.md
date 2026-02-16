@@ -27,6 +27,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 13 completed: bookmarks saved to a JSON file.
 - Step 14 completed: image support using Pillow and Tkinter.
 - Step 15 completed: permanent bookmarks with JSON load/save and delete links.
+- Step 16 completed: permanent browsing history saved to JSON.
 
 ## Files
 
@@ -432,6 +433,29 @@ Delete link pattern:
 
 ```html
 <a href="delete://https://example.com">❌</a>
+```
+
+## Step 16 Completed: Permanent Browsing History System
+
+Browsing history is now saved to disk so it persists across app restarts.
+
+What was added:
+
+- `history.json` file to store recent history
+- `load_global_history()` and `save_global_history()`
+- A `history://` page that lists visited URLs and titles
+- History button (📜) to open the page
+
+History rules:
+
+- Newest entries appear first
+- Duplicate URLs are replaced
+- Max 50 entries
+
+Example stored entry:
+
+```json
+{"url": "https://example.com", "title": "Example Domain"}
 ```
 
 ## Step 14 Completed: Add Image Support (Harder)
