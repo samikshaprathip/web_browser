@@ -11,6 +11,7 @@ SCROLL_STEP = 50
 class Tab:
     def __init__(self, url="home://"):
         self.url = url
+        self.title = "New Tab 💖"
         self.scroll_y = 0
         self.page_height = 0
         self.display_list = []
@@ -162,6 +163,17 @@ class Browser:
         </html>
         """
 
+    def extract_title(self, html):
+        import re
+
+        match = re.search(r"<title>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
+        if match:
+            title = match.group(1).strip()
+            title = re.sub(r"\s+", " ", title)
+            return title
+
+        return "Untitled Page"
+
     # ------------------- LOAD PAGE -------------------
     def load_page(self, url, add_to_history=True):
         tab = self.current_tab()
@@ -172,6 +184,7 @@ class Browser:
             else:
                 html = request(url)
 
+            tab.title = self.extract_title(html)
             engine = LayoutEngine(html)
             tab.display_list, tab.links = engine.parse()
 
@@ -188,6 +201,7 @@ class Browser:
 
         tab.scroll_y = 0
         tab.url = url
+        self.window.title(f"Pinkie Browser 💖 - {tab.title}")
 
         self.update_scrollbar()
         self.render()
@@ -245,9 +259,9 @@ class Browser:
         self.tab_frames = []
 
         for i, tab in enumerate(self.tabs):
-            title = "Home" if tab.url == "home://" else tab.url.replace("https://", "").replace("http://", "")
-            if len(title) > 12:
-                title = title[:12] + "..."
+            title = "Home 💕" if tab.url == "home://" else tab.title
+            if len(title) > 14:
+                title = title[:14] + "..."
 
             bg_color = "#ff4fa3" if i == self.current_tab_index else "#ffb3d9"
 

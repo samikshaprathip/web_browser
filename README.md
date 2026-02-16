@@ -23,6 +23,7 @@ This project is a first step toward building a custom web browser using Python a
 - Step 9 completed: scrolling system for navigating long pages.
 - Step 10 completed: link clicking with clickable area detection.
 - Step 11 completed: address bar for typing and navigating to URLs.
+- Step 12 completed: history tracking for back/forward navigation.
 
 ## Files
 
@@ -350,6 +351,37 @@ Features:
 - Auto-adds `https://` if missing
 - Navigation buttons (back, forward, home)
 - "Go" button for mouse-based navigation
+
+## Step 12 Completed: Add History Feature
+
+History lets the browser remember visited pages and move backward and forward through them.
+
+How it works:
+
+- Store a list of visited URLs and a current index.
+- Back button decrements the index and loads the previous URL.
+- Forward button increments the index and loads the next URL.
+
+Example:
+
+```python
+history = ["example.com", "google.com", "github.com"]
+current_index = 2
+```
+
+Back button:
+
+```python
+current_index -= 1
+load(history[current_index])
+```
+
+Forward button:
+
+```python
+current_index += 1
+load(history[current_index])
+```
 
 ## How It Works (High Level)
 
