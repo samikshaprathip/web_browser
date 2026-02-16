@@ -31,6 +31,7 @@ class Browser:
         # Tabs
         self.tabs = []
         self.current_tab_index = 0
+        self.bookmarks = []
 
         # ------------------- TAB BAR -------------------
         self.tab_bar = tk.Frame(self.window, bg="#ff77b7", height=TABBAR_HEIGHT)
@@ -95,6 +96,17 @@ class Browser:
         )
         self.home_btn.pack(side="left", padx=8)
 
+        self.bookmark_btn = tk.Button(
+            self.top_bar,
+            text="⭐",
+            bg="#ff4fa3",
+            fg="white",
+            font=("Arial", 12, "bold"),
+            relief="flat",
+            command=self.add_bookmark
+        )
+        self.bookmark_btn.pack(side="left", padx=6)
+
         self.url_entry = tk.Entry(
             self.top_bar,
             font=("Arial", 13),
@@ -154,7 +166,16 @@ class Browser:
 
     # ------------------- HOME PAGE -------------------
     def home_page_html(self):
-        return """
+        bookmarks_html = ""
+
+        if self.bookmarks:
+            bookmarks_html += "<h2>⭐ Your Bookmarks</h2>"
+            for link in self.bookmarks:
+                bookmarks_html += f'<p><a href="{link}">{link}</a></p>'
+        else:
+            bookmarks_html += "<p>No bookmarks yet 😭</p>"
+
+        return f"""
         <html>
         <body>
         <h1>🌸 Welcome to Pinkie Browser 💖</h1>
@@ -168,10 +189,20 @@ class Browser:
         <p><a href="https://httpbin.org/html">HttpBin HTML</a></p>
         <p><a href="https://info.cern.ch">First Website Ever</a></p>
 
+        {bookmarks_html}
+
         <p>Made with 💕</p>
         </body>
         </html>
         """
+
+    def add_bookmark(self):
+        tab = self.current_tab()
+
+        if tab.url not in self.bookmarks and tab.url != "home://":
+            self.bookmarks.append(tab.url)
+
+        self.load_page("home://", add_to_history=False)
 
     def extract_title(self, html):
         import re
