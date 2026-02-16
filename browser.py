@@ -1,4 +1,6 @@
 import tkinter as tk
+import json
+import os
 from network import request
 from layout import LayoutEngine
 
@@ -32,6 +34,8 @@ class Browser:
         self.tabs = []
         self.current_tab_index = 0
         self.bookmarks = []
+        self.bookmark_file = "bookmarks.json"
+        self.load_bookmarks()
 
         # ------------------- TAB BAR -------------------
         self.tab_bar = tk.Frame(self.window, bg="#ff77b7", height=TABBAR_HEIGHT)
@@ -171,7 +175,7 @@ class Browser:
         if self.bookmarks:
             bookmarks_html += "<h2>⭐ Your Bookmarks</h2>"
             for link in self.bookmarks:
-                bookmarks_html += f'<p><a href="{link}">{link}</a></p>'
+                bookmarks_html += f'<p><a href="{link}">{link}</a>  <a href="delete://{link}">❌</a></p>'
         else:
             bookmarks_html += "<p>No bookmarks yet 😭</p>"
 
@@ -196,11 +200,29 @@ class Browser:
         </html>
         """
 
+    def load_bookmarks(self):
+        if os.path.exists(self.bookmark_file):
+            try:
+                with open(self.bookmark_file, "r") as f:
+                    self.bookmarks = json.load(f)
+            except Exception:
+                self.bookmarks = []
+        else:
+            self.bookmarks = []
+
+    def save_bookmarks(self):
+        with open(self.bookmark_file, "w") as f:
+            json.dump(self.bookmarks, f, indent=4)
+
     def add_bookmark(self):
         tab = self.current_tab()
 
-        if tab.url not in self.bookmarks and tab.url != "home://":
+        if tab.url == "home://":
+            return
+
+        if tab.url not in self.bookmarks:
             self.bookmarks.append(tab.url)
+            self.save_bookmarks()
 
         self.load_page("home://", add_to_history=False)
 
@@ -253,6 +275,16 @@ class Browser:
 
         try:
             self.start_loading()
+
+            if url.startswith("delete://"):
+                real_url = url.replace("delete://", "")
+
+                if real_url in self.bookmarks:
+                    self.bookmarks.remove(real_url)
+                    self.save_bookmarks()
+
+                self.load_page("home://", add_to_history=False)
+                return
 
             if url == "home://":
                 html = self.home_page_html()
